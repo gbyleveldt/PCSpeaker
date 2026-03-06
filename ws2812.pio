@@ -1,0 +1,43 @@
+;
+; WS2812 PIO program for RP2040
+; Drives a single WS2812 LED, 800kHz, GRB format
+;
+
+.program ws2812
+.side_set 1
+
+.define public T1 2
+.define public T2 5
+.define public T3 3
+
+.lang_opt python sideset_init = pioasm.Pins(1)
+.lang_opt python out_init     = pioasm.Pins(1)
+.lang_opt python out_shiftdir = 1
+
+bitloop:
+    out x, 1       side 0 [T3 - 1]  ; Side 0, output LSB
+    jmp !x do_zero side 1 [T1 - 1]  ; Side 1, test bit
+do_one:
+    jmp bitloop    side 1 [T2 - 1]  ; Bit = 1, hold high
+do_zero:
+    nop            side 0 [T2 - 1]  ; Bit = 0, hold low
+
+% c-sdk {
+#include "hardware/clocks.h"
+
+static inline void ws2812_program_init(PIO pio, uint sm, uint offset, uint pin, float freq) {
+    pio_gpio_init(pio, pin);
+    pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
+
+    pio_sm_config c = ws2812_program_get_default_config(offset);
+    sm_config_set_sideset_pins(&c, pin);
+    sm_config_set_out_shift(&c, false, true, 24);  // MSB first, autopull at 24 bits
+    sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TX);
+
+    float div = clock_get_hz(clk_sys) / (freq * 10.f);
+    sm_config_set_clkdiv(&c, div);
+
+    pio_sm_init(pio, sm, offset, &c);
+    pio_sm_set_enabled(pio, sm, true);
+}
+%}
