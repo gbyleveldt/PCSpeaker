@@ -44,10 +44,28 @@ pico_enable_stdio_uart(PCSpeaker 0)
 pico_enable_stdio_usb(PCSpeaker 1)
 
 # Generate the WS2812 PIO header
-pico_generate_pio_header(PCSpeaker ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio)
+pico_generate_pio_header(PCSpeaker ${CMAKE_CURRENT_LIST_DIR}/drivers/ws2812/ws2812.pio)
+
+# LVGL
+set(LV_CONF_PATH ${CMAKE_CURRENT_LIST_DIR}/lv_conf.h CACHE STRING "" FORCE)
+add_subdirectory(lvgl)
 
 target_include_directories(PCSpeaker PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/drivers/gc9a01
+        ${CMAKE_CURRENT_LIST_DIR}/drivers/ws2812
+        ${CMAKE_CURRENT_LIST_DIR}/lvgl
+        ${CMAKE_CURRENT_LIST_DIR}/drivers/encoder
+        ${CMAKE_CURRENT_LIST_DIR}/drivers/relay
+        ${CMAKE_CURRENT_LIST_DIR}/drivers/tda7439
+)
+
+target_sources(PCSpeaker PRIVATE
+        drivers/gc9a01/gc9a01.c
+        drivers/gc9a01/gc9a01_lvgl.c
+        drivers/encoder/encoder.c
+        drivers/relay/relay.c
+        drivers/tda7439/tda7439.c
 )
 
 target_link_libraries(PCSpeaker
@@ -55,6 +73,7 @@ target_link_libraries(PCSpeaker
         hardware_spi
         hardware_i2c
         hardware_pio
+        lvgl
 )
 
 pico_add_extra_outputs(PCSpeaker)
