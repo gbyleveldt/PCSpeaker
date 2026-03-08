@@ -142,6 +142,7 @@ int main() {
 
     app_state_t state = STATE_OFF;
     uint32_t last_activity_ms = 0;
+    uint32_t power_off_time_ms = 0;
 
     while (true) {
         int8_t  delta     = encoder_get_delta();
@@ -157,8 +158,12 @@ int main() {
             // -------------------------------------------
             case STATE_OFF:
                 if (pressed) {
-                    state = STATE_POWERING_ON;
-                    printf("Powering on...\n");
+                    // Ignore button events for 500ms after powering off
+                    uint32_t now = to_ms_since_boot(get_absolute_time());
+                    if ((now - power_off_time_ms) > 500) {
+                        state = STATE_POWERING_ON;
+                        printf("Powering on...\n");
+                    }
                 }
                 break;
 
@@ -290,10 +295,12 @@ int main() {
             case STATE_POWERING_OFF:
                 tda7439_mute();
                 relay_power_off();
-                put_pixel(colour_grb(0, 32, 0));   // Red = off
+                put_pixel(colour_grb(0, 32, 0));
                 lv_label_set_text(_label, "OFF");
+                encoder_button_pressed();  // Discard pending event
+                power_off_time_ms = to_ms_since_boot(get_absolute_time());
                 state = STATE_OFF;
-                printf("Power off - settings saved\n");
+                printf("Power off\n");
                 break;
         }
 
