@@ -54,11 +54,12 @@ target_include_directories(PCSpeaker PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
         ${CMAKE_CURRENT_LIST_DIR}/drivers/gc9a01
         ${CMAKE_CURRENT_LIST_DIR}/drivers/ws2812
-        ${CMAKE_CURRENT_LIST_DIR}/lvgl
         ${CMAKE_CURRENT_LIST_DIR}/drivers/encoder
         ${CMAKE_CURRENT_LIST_DIR}/drivers/relay
         ${CMAKE_CURRENT_LIST_DIR}/drivers/tda7439
         ${CMAKE_CURRENT_LIST_DIR}/drivers/settings
+        ${CMAKE_CURRENT_LIST_DIR}/drivers/ui
+        ${CMAKE_CURRENT_LIST_DIR}/lvgl
 )
 
 target_sources(PCSpeaker PRIVATE
@@ -68,6 +69,7 @@ target_sources(PCSpeaker PRIVATE
         drivers/relay/relay.c
         drivers/tda7439/tda7439.c
         drivers/settings/settings.c
+        drivers/ui/ui.cpp
 )
 
 target_link_libraries(PCSpeaker
