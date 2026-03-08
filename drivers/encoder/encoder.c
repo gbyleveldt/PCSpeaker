@@ -34,16 +34,12 @@ static void gpio_irq_handler(uint gpio, uint32_t events) {
     uint32_t now = to_ms_since_boot(get_absolute_time());
 
     if (gpio == _pin_a || gpio == _pin_b) {
-        // Read both pins and form 2-bit state
         uint8_t a = gpio_get(_pin_a) ? 1 : 0;
         uint8_t b = gpio_get(_pin_b) ? 1 : 0;
         uint8_t current_ab = (a << 1) | b;
-
-        // Look up transition in state machine table
         int8_t direction = _qem_table[(_last_ab << 2) | current_ab];
         if (direction != 0)
             _delta += direction;
-
         _last_ab = current_ab;
     }
 
@@ -52,11 +48,14 @@ static void gpio_irq_handler(uint gpio, uint32_t events) {
             _last_pb_time = now;
             if (events & GPIO_IRQ_EDGE_FALL) {
                 _pb_state      = true;
-                _pb_event      = true;
                 _pb_press_time = now;
                 _pb_held       = false;
             } else if (events & GPIO_IRQ_EDGE_RISE) {
                 _pb_state = false;
+                // Only fire short press event on release if it wasn't a long press
+                if (!_pb_held) {
+                    _pb_event = true;
+                }
             }
         }
     }

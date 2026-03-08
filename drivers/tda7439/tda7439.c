@@ -69,7 +69,10 @@ bool tda7439_init(void) {
 
 void tda7439_set_volume(uint8_t vol) {
     if (vol > TDA7439_VOL_MAX) vol = TDA7439_VOL_MAX;
-    write_reg(REG_VOLUME, vol);
+    if (vol == TDA7439_VOL_MAX)
+        write_reg(REG_VOLUME, 0x38);  // Mute
+    else
+        write_reg(REG_VOLUME, vol);
 }
 
 void tda7439_set_input(uint8_t input) {

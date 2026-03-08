@@ -58,6 +58,7 @@ target_include_directories(PCSpeaker PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/drivers/encoder
         ${CMAKE_CURRENT_LIST_DIR}/drivers/relay
         ${CMAKE_CURRENT_LIST_DIR}/drivers/tda7439
+        ${CMAKE_CURRENT_LIST_DIR}/drivers/settings
 )
 
 target_sources(PCSpeaker PRIVATE
@@ -66,6 +67,7 @@ target_sources(PCSpeaker PRIVATE
         drivers/encoder/encoder.c
         drivers/relay/relay.c
         drivers/tda7439/tda7439.c
+        drivers/settings/settings.c
 )
 
 target_link_libraries(PCSpeaker
@@ -73,6 +75,7 @@ target_link_libraries(PCSpeaker
         hardware_spi
         hardware_i2c
         hardware_pio
+        hardware_flash
         lvgl
 )
 

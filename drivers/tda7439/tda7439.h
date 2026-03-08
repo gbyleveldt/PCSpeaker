@@ -13,7 +13,7 @@
 
 // Parameter limits
 #define TDA7439_VOL_MIN     0
-#define TDA7439_VOL_MAX     47
+#define TDA7439_VOL_MAX     48      // 0 = max volume, 48 = min volume (mute)
 #define TDA7439_INPUT_MIN   1
 #define TDA7439_INPUT_MAX   2
 #define TDA7439_TONE_MIN    0       // Maps to -14dB
