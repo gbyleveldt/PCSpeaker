@@ -71,37 +71,62 @@ static void apply_settings(const settings_t *s, uint8_t volume) {
 }
 
 // -------------------------------------------------------
+// WS2812 fade helper - simple linear fade between two colours over a duration in ms
+// -------------------------------------------------------
+static uint8_t _led_r = 0, _led_g = 32, _led_b = 0;  // Start red
+
+static void ws2812_set(uint8_t r, uint8_t g, uint8_t b) {
+    _led_r = r; _led_g = g; _led_b = b;
+    put_pixel(colour_grb(r, g, b));
+}
+
+static void ws2812_fade(uint8_t r2, uint8_t g2, uint8_t b2,
+                        uint32_t duration_ms) {
+    const uint32_t steps   = 50;
+    const uint32_t step_ms = duration_ms / steps;
+
+    for (uint32_t i = 0; i <= steps; i++) {
+        uint8_t r = (uint8_t)((int)_led_r + ((int)r2 - (int)_led_r) * (int)i / (int)steps);
+        uint8_t g = (uint8_t)((int)_led_g + ((int)g2 - (int)_led_g) * (int)i / (int)steps);
+        uint8_t b = (uint8_t)((int)_led_b + ((int)b2 - (int)_led_b) * (int)i / (int)steps);
+        put_pixel(colour_grb(r, g, b));
+        sleep_ms(step_ms);
+    }
+    _led_r = r2; _led_g = g2; _led_b = b2;
+}
+
+// -------------------------------------------------------
 // Centralised state entry - owns all display + LED updates
 // -------------------------------------------------------
 static void on_state_enter(app_state_t state, const settings_t *s, uint8_t volume) {
     switch (state) {
         case STATE_OFF:
-            put_pixel(colour_grb(0, 32, 0));    // Red = off
+            ws2812_set(0, 32, 0);    // Red = off
             lv_obj_clean(lv_scr_act());
             ui_init();                           // Black screen
             break;
         case STATE_VOLUME:
-            put_pixel(colour_grb(32, 0, 0));    // Green
+            ws2812_set(32, 0, 0);    // Green
             ui_show_volume(volume);
             break;
         case STATE_INPUT:
-            put_pixel(colour_grb(0, 0, 32));    // Blue
+            ws2812_set(0, 0, 32);    // Blue
             ui_show_input(s->input);
             break;
         case STATE_BASS:
-            put_pixel(colour_grb(20, 15, 0));   // Amber
+            ws2812_set(20, 15, 0);   // Amber
             ui_show_bass(s->bass);
             break;
         case STATE_MID:
-            put_pixel(colour_grb(20, 15, 0));   // Amber
+            ws2812_set(20, 15, 0);   // Amber
             ui_show_mid(s->mid);
             break;
         case STATE_TREBLE:
-            put_pixel(colour_grb(20, 15, 0));   // Amber
+            ws2812_set(20, 15, 0);   // Amber
             ui_show_treble(s->treble);
             break;
         case STATE_BALANCE:
-            put_pixel(colour_grb(20, 15, 0));   // Amber
+            ws2812_set(20, 15, 0);   // Amber
             ui_show_balance(s->balance);
             break;
         default:
@@ -183,7 +208,7 @@ int main() {
             // -------------------------------------------
             case STATE_POWERING_ON:
                 relay_power_on();
-                sleep_ms(1000);
+                ws2812_fade(32, 0, 0, 1000);   // Fade to green over 1 second
                 if (tda7439_init()) {
                     apply_settings(&settings, cur_volume);
                     state = STATE_VOLUME;
@@ -317,10 +342,12 @@ int main() {
             case STATE_POWERING_OFF:
                 tda7439_mute();
                 relay_power_off();
+                ws2812_fade(0, 32, 0, 500);     // Fade to red
+                lv_obj_clean(lv_scr_act());
+                ui_init();                       // Black screen
                 power_off_time_ms = to_ms_since_boot(get_absolute_time());
-                encoder_button_pressed();   // Discard pending event
+                encoder_button_pressed();
                 state = STATE_OFF;
-                on_state_enter(state, &settings, cur_volume);
                 printf("Power off\n");
                 break;
         }
