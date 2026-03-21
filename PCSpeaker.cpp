@@ -213,6 +213,8 @@ int main() {
                     apply_settings(&settings, cur_volume);
                     state = STATE_VOLUME;
                     on_state_enter(state, &settings, cur_volume);
+                    encoder_button_held();      // Discard - button may still be held after power on sequence
+                    encoder_button_pressed();   // Discard - same reason
                     printf("Power on OK\n");
                 } else {
                     relay_power_off();
