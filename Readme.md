@@ -119,3 +119,20 @@ Flash the resulting `PCSpeaker.uf2` to the RP2040-Zero by holding BOOT, pressing
 
 - [Raspberry Pi Pico SDK](https://github.com/raspberrypi/pico-sdk) 2.x
 - [LVGL](https://github.com/lvgl/lvgl) v8.3 (included as git submodule)
+
+---
+
+## Built With Claude
+
+This project was developed collaboratively with [Claude](https://claude.ai) (Anthropic). Claude contributed to software architecture, driver design, LVGL UI implementation, state machine design, and debugging throughout the bring-up process.
+
+All commits made directly by Claude include the following co-author tag:
+```
+Co-authored-by: Claude (Anthropic) <claude@anthropic.com>
+```
+
+---
+
+## Licence
+
+MIT
